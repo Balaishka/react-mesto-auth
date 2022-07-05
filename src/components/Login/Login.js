@@ -1,26 +1,26 @@
 import { useState } from "react";
 import Header from "../Header/Header";
 
-function Login({handleLogin}) {
+function Login({handleLogin, tokenCheck}) {
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-
-    function handleChangeEmail(e) {
-        setEmail(e.target.value);
-    }
+    const [data, setData] = useState({
+        email: "",
+        password: "",
+      });
     
-    function handleChangePassword(e) {
-        setPassword(e.target.value);
-    }
-
-    const handleSubmit = (e) => {
+      function handleChange(e) {
+        const { name, value } = e.target;
+        setData({
+          ...data,
+          [name]: value,
+        });
+      }
+    
+      function handleSubmit(e) {
         e.preventDefault();
-        if(!email || !password) {
-            return;
-        } 
-        handleLogin(email, password);
-    }
+        const { email, password } = data;
+        handleLogin({email, password});
+      }
 
     return (
         <>
@@ -30,8 +30,8 @@ function Login({handleLogin}) {
             <section className="content__block auth">
                 <form className="form form_login auth__form" onSubmit={handleSubmit}>
                     <h1 className="auth__title">Вход</h1>
-                    <input className="auth__input" type="text" placeholder="Email" onChange={handleChangeEmail} value={email} />
-                    <input className="auth__input" type="password" placeholder="Пароль" onChange={handleChangePassword} value={password} />
+                    <input name="email" className="auth__input" type="text" placeholder="Email" onChange={handleChange} value={data.email} />
+                    <input name="password" className="auth__input" type="password" placeholder="Пароль" onChange={handleChange} value={data.password} />
                     <button
                         type="submit"
                         className={`form__btn auth__btn form__btn_type_login`}

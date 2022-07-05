@@ -13,6 +13,9 @@ function Main({
   cards,
   onCardLike,
   onCardDelete,
+  userData,
+  handleLogout,
+  loggedIn
 }) {
   const { currentUser } = React.useContext(CurrentUserContext);
 
@@ -26,7 +29,7 @@ function Main({
 
   return (
     <>
-      <Header link="/sign-up" textLink="Войти" />
+      <Header loggedIn={loggedIn} link="/sign-up" textLink="Выйти" onLogout={handleLogout} />
       
       <main className="content">
         <section className="content__block profile">
