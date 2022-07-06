@@ -1,17 +1,16 @@
-.auth__title {
+.popup__message {
     font-family: 'Inter', Arial, Helvetica, sans-serif;
     font-weight: 900;
     font-size: 20px;
     line-height: 24px;
     text-align: center;
-    color: #FFFFFF;
-    margin: 0 0 27px;
+    color: #000000;
+    margin: 0 0 23px;
 }
 
 @media screen and (min-width:768px) {
-    .auth__title {
+    .popup__message {
         font-size: 24px;
         line-height: 29px;
-        margin: 0 0 37px;
     }
 }

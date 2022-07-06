@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Switch, Route, Redirect, useHistory } from "react-router-dom";
+import { Switch, Route, useHistory } from "react-router-dom";
 import Main from "../Main/Main";
 import ImagePopup from "../ImagePopup/ImagePopup";
 import EditProfilePopup from "../EditProfilePopup/EditProfilePopup";
@@ -12,6 +12,9 @@ import Login from "../Login/Login";
 import Register from "../Register/Register";
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
 import auth from "../../utils/Auth";
+import InfoTooltip from "../InfoTooltip/InfoTooltip";
+import check from "../../images/check.svg";
+import error from "../../images/error.svg";
 
 function App() {
   const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false);
@@ -19,6 +22,8 @@ function App() {
   const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false);
   const [isDeleteCardPopupOpen, setIsDeleteCardPopupOpen] = useState(false);
   const [isImagePopupOpen, setIsImagePopupOpen] = useState(false);
+  const [isRegisteredPopupOpen, setIsRegisteredPopupOpen] = useState(false);
+  const [isErrorPopupOpen, setIsErrorPopupOpen] = useState(false);
 
   const [selectedCard, setSelectedCard] = useState({});
 
@@ -35,10 +40,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [loggedIn, setLoggedIn] = useState(false);
-  const [userData, setUserData] = useState({
-    _id: "",
-    email: "",
-  });
+  const [email, setEmail] = useState("");
   const history = useHistory();
 
   // Получаем все карточки
@@ -103,6 +105,8 @@ function App() {
     setIsDeleteCardPopupOpen(false);
     setIsAddPlacePopupOpen(false);
     setIsImagePopupOpen(false);
+    setIsRegisteredPopupOpen(false);
+    setIsErrorPopupOpen(false);
     setSelectedCard({});
   }
 
@@ -205,13 +209,12 @@ function App() {
   function handleRegister({ email, password }) {
     auth
       .register({ email, password })
-      .then((data) => {
-        setUserData({
-          _id: data._id,
-          email: data.email,
-        });
+      .then(() => {
+        setIsRegisteredPopupOpen(true);
+        history.push("/sign-up");
       })
       .catch((err) => {
+        setIsErrorPopupOpen(true);
         console.log(`Ошибка: ${err}`);
       });
   }
@@ -221,23 +224,22 @@ function App() {
       .authorize({ email, password })
       .then((res) => {
         localStorage.setItem("jwt", res.token);
-        setUserData({
-          _id: res._id,
-          email: res.email,
-        });
         setLoggedIn(true);
+
+        const jwt = localStorage.getItem("jwt");
+        auth.getContent(jwt).then((res) => {
+          setEmail(res.data.email);
+        });
       })
       .catch((err) => {
+        setIsErrorPopupOpen(true);
         console.log(`Ошибка: ${err}`);
       });
   }
 
   function handleLogout() {
     localStorage.removeItem("jwt");
-    setUserData({
-      _id: "",
-      email: "",
-    });
+    setEmail("");
     setLoggedIn(false);
   }
 
@@ -247,10 +249,7 @@ function App() {
       auth
         .getContent(jwt)
         .then((res) => {
-          setUserData({
-            _id: res._id,
-            email: res.email,
-          });
+          setEmail(res.data.email);
           setLoggedIn(true);
           history.push("/");
         })
@@ -265,12 +264,7 @@ function App() {
       <CurrentUserContext.Provider value={{ currentUser }}>
         <div className="page">
           <Switch>
-            <ProtectedRoute
-              exact
-              path="/"
-              loggedIn={loggedIn}
-              userData={userData}
-            >
+            <ProtectedRoute exact path="/" loggedIn={loggedIn}>
               <Main
                 onEditProfile={handleEditProfileClick}
                 onAddPlace={handleAddPlaceClick}
@@ -279,18 +273,18 @@ function App() {
                 cards={cards}
                 onCardLike={handleCardLike}
                 onCardDelete={handleCardDelete}
-                userData={userData}
-                handleLogout={handleLogout}
+                email={email}
+                onSignOut={handleLogout}
                 loggedIn={loggedIn}
               />
             </ProtectedRoute>
 
             <Route path="/sign-up">
-              <Login handleLogin={handleLogin} tokenCheck={tokenCheck} />
+              <Login onLogin={handleLogin} tokenCheck={tokenCheck} />
             </Route>
 
             <Route path="/sign-in">
-              <Register handleRegister={handleRegister} />
+              <Register onRegister={handleRegister} />
             </Route>
           </Switch>
 
@@ -327,6 +321,22 @@ function App() {
             card={selectedCard}
             isOpen={isImagePopupOpen}
             onClose={closeAllPopups}
+          />
+
+          <InfoTooltip
+            name="registered"
+            isOpen={isRegisteredPopupOpen}
+            onClose={closeAllPopups}
+            message="Вы успешно зарегистрировались!"
+            linkImg={check}
+          />
+
+          <InfoTooltip
+            name="error"
+            isOpen={isErrorPopupOpen}
+            onClose={closeAllPopups}
+            message="Что-то пошло не так! Попробуйте ещё раз."
+            linkImg={error}
           />
         </div>
       </CurrentUserContext.Provider>
