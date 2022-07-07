@@ -1,9 +1,9 @@
-import React from "react";
+import { useState } from "react";
 import PopupWithForm from "../PopupWithForm/PopupWithForm";
 
 function AddPlacePopup({ isOpen, onClose, onAddPlace, isLoading }) {
-  const [cardName, setCardName] = React.useState("");
-  const [cardLink, setCardLink] = React.useState("");
+  const [cardName, setCardName] = useState("");
+  const [cardLink, setCardLink] = useState("");
 
   function handleChangeName(e) {
     setCardName(e.target.value);

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Header from "../Header/Header";
 import { NavLink } from "react-router-dom";
 
 function Register({ onRegister }) {
@@ -18,55 +17,45 @@ function Register({ onRegister }) {
 
   function handleRegister(e) {
     e.preventDefault();
-    const { email, password } = data;
-    onRegister({ email, password });
+    onRegister(data);
   }
 
   return (
-    <>
-      <Header link="/sign-up" textLink="Войти" />
-
-      <main className="content">
-        <section className="content__block auth">
-          <form
-            className="form form_login auth__form"
-            onSubmit={handleRegister}
+    <section className="content__block auth">
+      <form className="form form_login auth__form" onSubmit={handleRegister}>
+        <div>
+          <h1 className="auth__title">Регистрация</h1>
+          <input
+            name="email"
+            className="auth__input"
+            type="text"
+            placeholder="Email"
+            onChange={handleChange}
+            value={data.email}
+          />
+          <input
+            name="password"
+            className="auth__input"
+            type="password"
+            placeholder="Пароль"
+            onChange={handleChange}
+            value={data.password}
+          />
+        </div>
+        <div>
+          <button
+            type="submit"
+            className={`form__btn auth__btn form__btn_type_login`}
+            aria-label="Регистрация"
           >
-            <div>
-              <h1 className="auth__title">Регистрация</h1>
-              <input
-                name="email"
-                className="auth__input"
-                type="text"
-                placeholder="Email"
-                onChange={handleChange}
-                value={data.email}
-              />
-              <input
-                name="password"
-                className="auth__input"
-                type="password"
-                placeholder="Пароль"
-                onChange={handleChange}
-                value={data.password}
-              />
-            </div>
-            <div>
-              <button
-                type="submit"
-                className={`form__btn auth__btn form__btn_type_login`}
-                aria-label="Регистрация"
-              >
-                Зарегистрироваться
-              </button>
-              <NavLink className="auth__link" to="/sign-up">
-                Уже зарегистрированы? Войти
-              </NavLink>
-            </div>
-          </form>
-        </section>
-      </main>
-    </>
+            Зарегистрироваться
+          </button>
+          <NavLink className="auth__link" to="/sign-up">
+            Уже зарегистрированы? Войти
+          </NavLink>
+        </div>
+      </form>
+    </section>
   );
 }
 

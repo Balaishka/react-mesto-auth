@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Switch, Route, useHistory } from "react-router-dom";
+import { Switch, Route, useHistory, NavLink } from "react-router-dom";
+import Header from "../Header/Header";
+import Footer from "../Footer/Footer";
 import Main from "../Main/Main";
 import ImagePopup from "../ImagePopup/ImagePopup";
 import EditProfilePopup from "../EditProfilePopup/EditProfilePopup";
@@ -13,8 +15,6 @@ import Register from "../Register/Register";
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
 import auth from "../../utils/Auth";
 import InfoTooltip from "../InfoTooltip/InfoTooltip";
-import check from "../../images/check.svg";
-import error from "../../images/error.svg";
 
 function App() {
   const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false);
@@ -22,8 +22,9 @@ function App() {
   const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false);
   const [isDeleteCardPopupOpen, setIsDeleteCardPopupOpen] = useState(false);
   const [isImagePopupOpen, setIsImagePopupOpen] = useState(false);
-  const [isRegisteredPopupOpen, setIsRegisteredPopupOpen] = useState(false);
-  const [isErrorPopupOpen, setIsErrorPopupOpen] = useState(false);
+  const [isInfoTooltipOpen, setIsInfoTooltipOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [selectedCard, setSelectedCard] = useState({});
 
@@ -79,7 +80,7 @@ function App() {
   }, [loggedIn, history]);
 
   useEffect(() => {
-    tokenCheck();
+    checkToken();
   }, []);
 
   function handleEditAvatarClick() {
@@ -105,8 +106,7 @@ function App() {
     setIsDeleteCardPopupOpen(false);
     setIsAddPlacePopupOpen(false);
     setIsImagePopupOpen(false);
-    setIsRegisteredPopupOpen(false);
-    setIsErrorPopupOpen(false);
+    setIsInfoTooltipOpen(false);
     setSelectedCard({});
   }
 
@@ -210,11 +210,13 @@ function App() {
     auth
       .register({ email, password })
       .then(() => {
-        setIsRegisteredPopupOpen(true);
+        setIsSuccess(true);
+        setIsInfoTooltipOpen(true);
         history.push("/sign-up");
       })
       .catch((err) => {
-        setIsErrorPopupOpen(true);
+        setIsSuccess(false);
+        setIsInfoTooltipOpen(true);
         console.log(`Ошибка: ${err}`);
       });
   }
@@ -226,13 +228,12 @@ function App() {
         localStorage.setItem("jwt", res.token);
         setLoggedIn(true);
 
-        const jwt = localStorage.getItem("jwt");
-        auth.getContent(jwt).then((res) => {
+        auth.getContent(res.token).then((res) => {
           setEmail(res.data.email);
         });
       })
       .catch((err) => {
-        setIsErrorPopupOpen(true);
+        setIsSuccess(false);
         console.log(`Ошибка: ${err}`);
       });
   }
@@ -243,7 +244,7 @@ function App() {
     setLoggedIn(false);
   }
 
-  function tokenCheck() {
+  function checkToken() {
     const jwt = localStorage.getItem("jwt");
     if (jwt) {
       auth
@@ -259,32 +260,85 @@ function App() {
     }
   }
 
+  function handleButtonMenu() {
+    if (!isMenuOpen) {
+      setIsMenuOpen(true);
+    } else {
+      setIsMenuOpen(false);
+    }
+  }
+
   return (
     <>
       <CurrentUserContext.Provider value={{ currentUser }}>
         <div className="page">
+          <Header loggedIn={loggedIn}>
+            <Switch>
+              <Route exact path="/">
+                <>
+                  <div
+                    className={`header__nav header__nav_mobile ${
+                      isMenuOpen ? "header__nav_mobile-opened" : ""
+                    }`}
+                  >
+                    <p className="header__email">{email}</p>
+                    <button className="header__button" onClick={handleLogout}>
+                      Выйти
+                    </button>
+                  </div>
+                  <button
+                    className={`header__button-menu ${
+                      isMenuOpen ? "header__button-menu_close" : ""
+                    }`}
+                    onClick={handleButtonMenu}
+                  ></button>
+                </>
+              </Route>
+
+              <Route path="/sign-up">
+                <NavLink className="header__link" to="/sign-in">
+                  Регистрация
+                </NavLink>
+              </Route>
+
+              <Route path="/sign-in">
+                <NavLink className="header__link" to="/sign-up">
+                  Войти
+                </NavLink>
+              </Route>
+            </Switch>
+          </Header>
+
+          <main className="content">
+            <Switch>
+              <ProtectedRoute exact path="/" loggedIn={loggedIn}>
+                <Main
+                  onEditProfile={handleEditProfileClick}
+                  onAddPlace={handleAddPlaceClick}
+                  onEditAvatar={handleEditAvatarClick}
+                  onCardClick={handleCardClick}
+                  cards={cards}
+                  onCardLike={handleCardLike}
+                  onCardDelete={handleCardDelete}
+                  email={email}
+                  onSignOut={handleLogout}
+                  loggedIn={loggedIn}
+                />
+              </ProtectedRoute>
+
+              <Route path="/sign-up">
+                <Login onLogin={handleLogin} />
+              </Route>
+
+              <Route path="/sign-in">
+                <Register onRegister={handleRegister} />
+              </Route>
+            </Switch>
+          </main>
+
           <Switch>
-            <ProtectedRoute exact path="/" loggedIn={loggedIn}>
-              <Main
-                onEditProfile={handleEditProfileClick}
-                onAddPlace={handleAddPlaceClick}
-                onEditAvatar={handleEditAvatarClick}
-                onCardClick={handleCardClick}
-                cards={cards}
-                onCardLike={handleCardLike}
-                onCardDelete={handleCardDelete}
-                email={email}
-                onSignOut={handleLogout}
-                loggedIn={loggedIn}
-              />
-            </ProtectedRoute>
-
-            <Route path="/sign-up">
-              <Login onLogin={handleLogin} tokenCheck={tokenCheck} />
-            </Route>
-
-            <Route path="/sign-in">
-              <Register onRegister={handleRegister} />
+            <Route exact path="/">
+              <Footer />
             </Route>
           </Switch>
 
@@ -324,19 +378,9 @@ function App() {
           />
 
           <InfoTooltip
-            name="registered"
-            isOpen={isRegisteredPopupOpen}
+            isSuccess={isSuccess}
+            isOpen={isInfoTooltipOpen}
             onClose={closeAllPopups}
-            message="Вы успешно зарегистрировались!"
-            linkImg={check}
-          />
-
-          <InfoTooltip
-            name="error"
-            isOpen={isErrorPopupOpen}
-            onClose={closeAllPopups}
-            message="Что-то пошло не так! Попробуйте ещё раз."
-            linkImg={error}
           />
         </div>
       </CurrentUserContext.Provider>

@@ -1,15 +1,30 @@
-function InfoTooltip({ name, isOpen, onClose, message, linkImg }) {
+import check from "../../images/check.svg";
+import error from "../../images/error.svg";
+
+function InfoTooltip({ isSuccess, onClose, isOpen }) {
   return (
-    <div className={`popup popup_name_${name} ${isOpen ? "popup_opened" : ""}`}>
+    <div
+      className={`popup popup_name_info-tooltip ${
+        isOpen ? "popup_opened" : ""
+      }`}
+    >
       <div className="popup__container">
         <button
           type="button"
-          className={`popup__close-btn popup__close-btn_name_${name}`}
+          className="popup__close-btn"
           aria-label="Закрыть"
           onClick={onClose}
         ></button>
-        <img className="popup__img" src={linkImg} alt={message} />
-        <h3 className="popup__message">{message}</h3>
+        <img
+          className="popup__img"
+          src={isSuccess ? check : error}
+          alt={isSuccess ? "Успешно" : "Ошибка"}
+        />
+        <h3 className="popup__message">
+          {isSuccess
+            ? "Вы успешно зарегистрировались!"
+            : "Что-то пошло не так! Попробуйте ещё раз."}
+        </h3>
       </div>
     </div>
   );
