@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Switch, Route, useHistory, NavLink } from "react-router-dom";
+import { Switch, Route, useHistory } from "react-router-dom";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import Main from "../Main/Main";
@@ -24,7 +24,6 @@ function App() {
   const [isImagePopupOpen, setIsImagePopupOpen] = useState(false);
   const [isInfoTooltipOpen, setIsInfoTooltipOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [selectedCard, setSelectedCard] = useState({});
 
@@ -227,10 +226,7 @@ function App() {
       .then((res) => {
         localStorage.setItem("jwt", res.token);
         setLoggedIn(true);
-
-        auth.getContent(res.token).then((res) => {
-          setEmail(res.data.email);
-        });
+        setEmail(email);
       })
       .catch((err) => {
         setIsSuccess(false);
@@ -260,54 +256,15 @@ function App() {
     }
   }
 
-  function handleButtonMenu() {
-    if (!isMenuOpen) {
-      setIsMenuOpen(true);
-    } else {
-      setIsMenuOpen(false);
-    }
-  }
-
   return (
     <>
       <CurrentUserContext.Provider value={{ currentUser }}>
         <div className="page">
-          <Header loggedIn={loggedIn}>
-            <Switch>
-              <Route exact path="/">
-                <>
-                  <div
-                    className={`header__nav header__nav_mobile ${
-                      isMenuOpen ? "header__nav_mobile-opened" : ""
-                    }`}
-                  >
-                    <p className="header__email">{email}</p>
-                    <button className="header__button" onClick={handleLogout}>
-                      Выйти
-                    </button>
-                  </div>
-                  <button
-                    className={`header__button-menu ${
-                      isMenuOpen ? "header__button-menu_close" : ""
-                    }`}
-                    onClick={handleButtonMenu}
-                  ></button>
-                </>
-              </Route>
-
-              <Route path="/sign-up">
-                <NavLink className="header__link" to="/sign-in">
-                  Регистрация
-                </NavLink>
-              </Route>
-
-              <Route path="/sign-in">
-                <NavLink className="header__link" to="/sign-up">
-                  Войти
-                </NavLink>
-              </Route>
-            </Switch>
-          </Header>
+          <Header
+            loggedIn={loggedIn}
+            email={email}
+            handleLogout={handleLogout}
+          />
 
           <main className="content">
             <Switch>
